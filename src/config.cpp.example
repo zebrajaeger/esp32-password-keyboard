@@ -1,0 +1,48 @@
+#include "config.h"
+
+const char *Config::getWifiSSID()
+{
+    return "myWifiSSID";
+}
+
+const char *Config::getWifiPassword()
+{
+    return "myWifiPassword";
+}
+
+void Config::sendPW1(BleKeyboard &bleKeyboard)
+{
+    bleKeyboard.print("foobar!");
+    bleKeyboard.write(KEY_RETURN);
+}
+
+// 'foobar#'
+void Config::sendPW2(BleKeyboard &bleKeyboard)
+{
+    bleKeyboard.print("foobar");
+
+    // send '#'  because it doesn't work as string (because of my German keyboard Layout?)
+    sendKeycode(bleKeyboard, 50);
+
+    bleKeyboard.write(KEY_RETURN);
+}
+
+void Config::sendPW3(BleKeyboard &bleKeyboard)
+{
+    // TODO implement me
+}
+
+void Config::sendPW4(BleKeyboard &bleKeyboard)
+{
+    // TODO implement me
+}
+
+void Config::sendPW5(BleKeyboard &bleKeyboard)
+{
+    // TODO implement me
+}
+
+void Config::sendPW6(BleKeyboard &bleKeyboard)
+{
+    // TODO implement me
+}
