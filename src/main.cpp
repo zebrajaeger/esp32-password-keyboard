@@ -1,16 +1,14 @@
 #include <Arduino.h>
-
 #include <BleKeyboard.h>
+#include <ESPmDNS.h>
+#include <WiFi.h>
+#include <WiFiUdp.h>
 #include <ezButton.h>
 #include <jled.h>
 
-#include <WiFi.h>
-#include <ESPmDNS.h>
-#include <WiFiUdp.h>
-#include <ArduinoOTA.h>
-
-#include "hardware.h"
 #include "config.h"
+#include "hardware.h"
+#include "ota.h"
 
 ezButton button1(KEY_1);
 ezButton button2(KEY_2);
@@ -22,10 +20,10 @@ ezButton button6(KEY_6);
 auto led1 = JLed(jled::Esp32Hal(LED_BUILTIN, 6));
 auto led2 = JLed(jled::Esp32Hal(LED_EXTERNAL, 7));
 
+OTA ota;
 BleKeyboard bleKeyboard;
 
-void setup()
-{
+void setup() {
   Serial.begin(115200);
 
   // IO
@@ -44,8 +42,7 @@ void setup()
   // WiFi
   WiFi.mode(WIFI_STA);
   WiFi.begin(Config::getWifiSSID(), Config::getWifiPassword());
-  while (WiFi.waitForConnectResult() != WL_CONNECTED)
-  {
+  while (WiFi.waitForConnectResult() != WL_CONNECTED) {
     Serial.println("Connection Failed! Rebooting...");
     led1.Blink(200, 300).Forever();
     delay(5000);
@@ -53,39 +50,8 @@ void setup()
     ESP.restart();
   }
 
-  ArduinoOTA
-      .onStart([]()
-               {
-                 led1.Candle().Forever();
-                 String type;
-                 if (ArduinoOTA.getCommand() == U_FLASH)
-                   type = "sketch";
-                 else // U_SPIFFS
-                   type = "filesystem";
-
-                 // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
-                 Serial.println("Start updating " + type);
-               })
-      .onEnd([]()
-             { Serial.println("\nEnd"); })
-      .onProgress([](unsigned int progress, unsigned int total)
-                  { Serial.printf("%u%%\r", (progress / (total / 100))); })
-      .onError([](ota_error_t error)
-               {
-                 Serial.printf("Error[%u]: ", error);
-                 if (error == OTA_AUTH_ERROR)
-                   Serial.println("Auth Failed");
-                 else if (error == OTA_BEGIN_ERROR)
-                   Serial.println("Begin Failed");
-                 else if (error == OTA_CONNECT_ERROR)
-                   Serial.println("Connect Failed");
-                 else if (error == OTA_RECEIVE_ERROR)
-                   Serial.println("Receive Failed");
-                 else if (error == OTA_END_ERROR)
-                   Serial.println("End Failed");
-               });
-
-  ArduinoOTA.begin();
+  led1.Candle().Forever();
+  ota.begin();
 
   Serial.println("Ready");
   Serial.print("IP address: ");
@@ -94,9 +60,8 @@ void setup()
   led1.FadeOff(250);
 }
 
-void loop()
-{
-  ArduinoOTA.handle();
+void loop() {
+  ota.loop();
 
   button1.loop();
   button2.loop();
@@ -104,46 +69,36 @@ void loop()
   button4.loop();
   button5.loop();
   button6.loop();
-  led1.Update();
 
-  bool ledOn = led1.IsRunning();
-  bool bleOn = bleKeyboard.isConnected();
-
-  if (button1.isPressed())
-  {
+  if (button1.isPressed()) {
     Config::sendPW1(bleKeyboard);
   }
-  if (button2.isPressed())
-  {
+  if (button2.isPressed()) {
     Config::sendPW2(bleKeyboard);
   }
-  if (button3.isPressed())
-  {
+  if (button3.isPressed()) {
     Config::sendPW3(bleKeyboard);
   }
-  if (button4.isPressed())
-  {
+  if (button4.isPressed()) {
     Config::sendPW4(bleKeyboard);
   }
-  if (button5.isPressed())
-  {
+  if (button5.isPressed()) {
     Config::sendPW5(bleKeyboard);
   }
-  if (button6.isPressed())
-  {
+  if (button6.isPressed()) {
     Config::sendPW6(bleKeyboard);
   }
-  if (button2.isPressed())
-  {
+  if (button2.isPressed()) {
     Config::sendPW2(bleKeyboard);
   }
 
-  if (ledOn && !bleOn)
-  {
+  led1.Update();
+  led2.Update();
+  bool ledOn = led1.IsRunning();
+  bool bleOn = bleKeyboard.isConnected();
+  if (ledOn && !bleOn) {
     led1.Stop();
-  }
-  else if (!ledOn && bleOn)
-  {
+  } else if (!ledOn && bleOn) {
     led1.Breathe(2000).Forever().DelayAfter(2000);
   }
 }
