@@ -3,38 +3,42 @@
 #include <ESPmDNS.h>
 #include <WiFi.h>
 #include <WiFiUdp.h>
-#include <ezButton.h>
+// #include <ezButton.h>
+// #include <Button.h>
+#include <JC_Button.h>
 #include <jled.h>
 
 #include "config.h"
 #include "hardware.h"
 #include "ota.h"
 
-ezButton button1(KEY_1);
-ezButton button2(KEY_2);
-ezButton button3(KEY_3);
-ezButton button4(KEY_4);
-ezButton button5(KEY_5);
-ezButton button6(KEY_6);
+#define DEBOUNCE_TIME_MS 50
+Button button1(KEY_1, DEBOUNCE_TIME_MS);
+Button button2(KEY_2, DEBOUNCE_TIME_MS);
+Button button3(KEY_3, DEBOUNCE_TIME_MS);
+Button button4(KEY_4, DEBOUNCE_TIME_MS);
+Button button5(KEY_5, DEBOUNCE_TIME_MS);
+Button button6(KEY_6, DEBOUNCE_TIME_MS);
 
-auto led1 = JLed(jled::Esp32Hal(LED_BUILTIN, 6));
-auto led2 = JLed(jled::Esp32Hal(LED_EXTERNAL, 7));
+auto led1 = JLed(jled::Esp32Hal(LED_BUILTIN, 4));
+auto led2 = JLed(jled::Esp32Hal(LED_EXTERNAL, 5));
 
 OTA ota;
-BleKeyboard bleKeyboard;
+BleKeyboard bleKeyboard("PWkeyboard");
 
 void setup() {
   Serial.begin(115200);
 
   // IO
+  button1.begin();
+  button2.begin();
+  button3.begin();
+  button4.begin();
+  button5.begin();
+  button6.begin();
+
   led1.FadeOn(250);
   led2.Candle().Forever();
-  button1.setDebounceTime(50);
-  button2.setDebounceTime(50);
-  button3.setDebounceTime(50);
-  button4.setDebounceTime(50);
-  button5.setDebounceTime(50);
-  button6.setDebounceTime(50);
 
   // BT
   bleKeyboard.begin();
@@ -63,33 +67,30 @@ void setup() {
 void loop() {
   ota.loop();
 
-  button1.loop();
-  button2.loop();
-  button3.loop();
-  button4.loop();
-  button5.loop();
-  button6.loop();
+  button1.read();
+  button2.read();
+  button3.read();
+  button4.read();
+  button5.read();
+  button6.read();
 
-  if (button1.isPressed()) {
+  if (button1.wasPressed()) {
     Config::sendPW1(bleKeyboard);
   }
-  if (button2.isPressed()) {
+  if (button2.wasPressed()) {
     Config::sendPW2(bleKeyboard);
   }
-  if (button3.isPressed()) {
+  if (button3.wasPressed()) {
     Config::sendPW3(bleKeyboard);
   }
-  if (button4.isPressed()) {
+  if (button4.wasPressed()) {
     Config::sendPW4(bleKeyboard);
   }
-  if (button5.isPressed()) {
+  if (button5.wasPressed()) {
     Config::sendPW5(bleKeyboard);
   }
-  if (button6.isPressed()) {
+  if (button6.wasPressed()) {
     Config::sendPW6(bleKeyboard);
-  }
-  if (button2.isPressed()) {
-    Config::sendPW2(bleKeyboard);
   }
 
   led1.Update();

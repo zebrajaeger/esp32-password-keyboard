@@ -13,6 +13,7 @@ const char *Config::getWifiPassword()
 void Config::sendPW1(BleKeyboard &bleKeyboard)
 {
     bleKeyboard.print("foobar!");
+    delay(100);
     bleKeyboard.write(KEY_RETURN);
 }
 
@@ -24,6 +25,7 @@ void Config::sendPW2(BleKeyboard &bleKeyboard)
     // send '#'  because it doesn't work as string (because of my German keyboard Layout?)
     sendKeycode(bleKeyboard, 50);
 
+    delay(100);
     bleKeyboard.write(KEY_RETURN);
 }
 
