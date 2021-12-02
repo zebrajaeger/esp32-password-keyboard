@@ -5,7 +5,7 @@
 
 #define KEY_1 16
 #define KEY_2 17
-#define KEY_3 18
-#define KEY_4 19
+#define KEY_3 19
+#define KEY_4 18
 #define KEY_5 22
 #define KEY_6 23
